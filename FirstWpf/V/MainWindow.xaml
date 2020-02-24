@@ -1,0 +1,76 @@
+﻿<Window x:Class="FirstWpf.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:FirstWpf"
+        mc:Ignorable="d"
+        Title="HackerList" Height="546" Width="947.5">
+    <Window.DataContext>
+        <local:VM/>
+    </Window.DataContext>
+
+    <Grid ShowGridLines="False">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230"/>
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+
+        <ListBox Grid.Column="1" ItemsSource="{Binding Info}" SelectedItem="{Binding SelectedItem}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Margin="3">
+                        <Grid ShowGridLines="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
+                            
+                            <StackPanel Grid.Column="1">
+                                <TextBlock FontSize="15" Text="{Binding Path=Name}"/>
+                                <TextBlock FontSize="12" Text="{Binding Path=ID}"/>
+                                <TextBlock FontSize="12" Text="{Binding Path=VAC}"/>
+                                <TextBlock FontSize="12" Text="{Binding Path=GameStatus}"/>
+                            </StackPanel>
+                            
+                            <Image Margin="4" Grid.Column="0" HorizontalAlignment="Left" Source="{Binding Path=Avatar}" Width="50" Height="50"/>
+                        </Grid>
+                    </StackPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+
+        <Grid Grid.Column="0">
+
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Margin="10" Grid.Row="0">
+                <Label Width="200" Content="Get Info" />
+                <Button Margin="4" Content="Get Online" Command="{Binding GetOnline}" Width="200" Height="25"/>
+                <Button Margin="4" Grid.Row="1" Content="Get All" Command="{Binding GetAll}" Width="200" Height="25"/>
+            </StackPanel>
+
+            <StackPanel Margin="10" Grid.Row="1">
+                <Label Width="200" Content="Add to list" />
+                <TextBox Margin="4" Text="{Binding AddTB}" Width="200"/>
+                <Button Margin="4" Command="{Binding Add}" Content="add" Width="200" Height="25" Click="Button_Click"/>
+            </StackPanel>
+
+            <StackPanel Margin="10" Grid.Row="2">
+                <Label Margin="4" Width="200" Content="Remove from list" />
+                <Button Command="{Binding Remove}" Margin="4" Content="remove" Width="200" Height="25" />
+            </StackPanel>
+
+            <StackPanel Margin="10" Grid.Row="3">
+                <Label Width="200" Content="Change list path" />
+                <TextBox Text="{Binding PathTB}" Margin="4" Width="200"/>
+                <Button Command="{Binding ChangePath}" Margin="4" Content="Set" Width="200" Height="25"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>

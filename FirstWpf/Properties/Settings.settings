@@ -1,0 +1,12 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FirstWpf.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="HackerListPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">HackerList.txt</Value>
+    </Setting>
+    <Setting Name="HackerInfoPath" Type="System.String" Scope="User">
+      <Value Profile="(Default)">HackerInfo.txt</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
