@@ -121,6 +121,10 @@ namespace FirstWpf
                       MainClasses.RemoveFromList(SelectedItem.ID);
                       MessageBox.Show(SelectedItem.Name);
                       Info = MainClasses.GetOnline();
+                  },
+                  (x) =>
+                  {
+                      return _selectedItem != null;
                   }));
             }
         }
@@ -137,5 +141,22 @@ namespace FirstWpf
                   }));
             }
         }
-    }   
+
+        private RelayCommand _openInBrowser;
+        public RelayCommand OpenInBrowser
+        {
+            get
+            {
+                return _openInBrowser ??
+                  (_openInBrowser = new RelayCommand((x) =>
+                  {
+                      System.Diagnostics.Process.Start("https://steamcommunity.com/profiles/" + _selectedItem.ID);
+                  },
+                  (x) =>
+                  {
+                      return _selectedItem != null;
+                  }));
+            }
+        }
+    }
 }

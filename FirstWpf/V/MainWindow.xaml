@@ -47,6 +47,7 @@
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
                 <RowDefinition Height="auto"/>
+                <RowDefinition Height="auto"/>
             </Grid.RowDefinitions>
 
             <StackPanel Margin="10" Grid.Row="0">
@@ -70,6 +71,11 @@
                 <Label Width="200" Content="Change list path" />
                 <TextBox Text="{Binding PathTB}" Margin="4" Width="200"/>
                 <Button Command="{Binding ChangePath}" Margin="4" Content="Set" Width="200" Height="25"/>
+            </StackPanel>
+
+            <StackPanel Grid.Row="4">
+                <Label Content="Open in browser"/>
+                <Button Margin="4" Command="{Binding OpenInBrowser}" Content="Open" Width="200" Height="25"/>
             </StackPanel>
         </Grid>
     </Grid>
