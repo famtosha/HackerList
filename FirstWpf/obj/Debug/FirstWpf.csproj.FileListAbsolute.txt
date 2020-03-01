@@ -8,7 +8,6 @@ D:\vs\FirstWpf\FirstWpf\obj\Debug\FirstWpf_MarkupCompile.lref
 D:\vs\FirstWpf\FirstWpf\obj\Debug\FirstWpf.g.resources
 D:\vs\FirstWpf\FirstWpf\obj\Debug\FirstWpf.Properties.Resources.resources
 D:\vs\FirstWpf\FirstWpf\obj\Debug\FirstWpf.csproj.GenerateResource.cache
-D:\vs\FirstWpf\FirstWpf\obj\Debug\FirstWpf.csproj.CoreCompileInputs.cache
 D:\vs\FirstWpf\FirstWpf\obj\Debug\FirstWpf.exe
 D:\vs\FirstWpf\FirstWpf\obj\Debug\FirstWpf.pdb
 D:\vs\FirstWpf\FirstWpf\obj\Debug\V\MainWindow.g.cs

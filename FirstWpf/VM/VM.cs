@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using System.Threading;
+using System.Windows.Media.Imaging;
 
 namespace FirstWpf
 {
@@ -19,16 +21,30 @@ namespace FirstWpf
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        private ObservableCollection<PlayerInfo> _info = new ObservableCollection<PlayerInfo>();
-        public ObservableCollection<PlayerInfo> Info
+        private List<PlayerInfo> _info = new List<PlayerInfo>();
+        public List<PlayerInfo> Info
         {
             get
             {
                 return _info;
+                
             }
             set
             {
                 _info = value; OnPropertyChanged("Info");
+            }
+        }
+
+        private bool _isWorking = false;
+        public bool IsWorking
+        {
+            get
+            {
+                return _isWorking;
+            }
+            set
+            {
+                _isWorking = value; OnPropertyChanged("IsWorking");
             }
         }
 
@@ -67,59 +83,78 @@ namespace FirstWpf
             }
             set
             {
-                _selectedItem = value;
+                _selectedItem = value; OnPropertyChanged("SelectedItem");
             }
         }
 
-        private RelayCommand _getAll;
-        public RelayCommand GetAll
+        private RelayCommand _getAllCommand;
+        public RelayCommand GetAllCommand
         {
             get
             {
-                return _getAll ??
-                  (_getAll = new RelayCommand(x =>
+                return _getAllCommand ??
+                  (_getAllCommand = new RelayCommand(x =>
                   {
-                      Info = MainClasses.GetAll();
+                      IsWorking = true;
+                      GetAllAsync();
+                  },
+                  (x) =>
+                  {
+                      return IsWorking == false;
                   }));
             }
         }
+        private async void GetAllAsync()
+        {           
+            var result = await MainClasses.GetAllAsync();
+            Application.Current.Dispatcher.Invoke(() => { Info = result; IsWorking = false; });            
+        }
 
-        private RelayCommand _getOnline;
-        public RelayCommand GetOnline
+        private RelayCommand _getOnlineCommand;
+        public RelayCommand GetOnlineCommand
         {
             get
             {
-                return _getOnline ??
-                  (_getOnline = new RelayCommand(x =>
+                return _getOnlineCommand ??
+                  (_getOnlineCommand = new RelayCommand(x =>
                   {
-                      Info = MainClasses.GetOnline();
+                      IsWorking = true;
+                      GetOnlineAsync();
+                  },
+                  (x) =>
+                  {
+                      return IsWorking == false;
                   }));
             }
         }
+        private async void GetOnlineAsync()
+        {
+            var result = await MainClasses.GetOnlineAsync();
+            Application.Current.Dispatcher.Invoke(() => { Info = result; IsWorking = false; });
+        }
 
-        private RelayCommand _changePath;
-        public RelayCommand ChangePath
+        private RelayCommand _changePathCommand;
+        public RelayCommand ChangePathCommand
         {
             get
             {
-                return _changePath ??
-                  (_changePath = new RelayCommand(x =>
+                return _changePathCommand ??
+                  (_changePathCommand = new RelayCommand(x =>
                   {
                       InfoPath.SetHackerListPath(PathTB);
                   }));
             }
         }
 
-        private RelayCommand _remove;
-        public RelayCommand Remove
+        private RelayCommand _removeCommand;
+        public RelayCommand RemoveCommand
         {
             get
             {
-                return _remove ??
-                  (_remove = new RelayCommand(x =>
+                return _removeCommand ??
+                  (_removeCommand = new RelayCommand(x =>
                   {
                       MainClasses.RemoveFromList(SelectedItem.ID);
-                      MessageBox.Show(SelectedItem.Name);
                       Info = MainClasses.GetOnline();
                   },
                   (x) =>
@@ -129,26 +164,26 @@ namespace FirstWpf
             }
         }
 
-        private RelayCommand _add;
-        public RelayCommand Add
+        private RelayCommand _addCommand;
+        public RelayCommand AddCommand
         {
             get
             {
-                return _add ??
-                  (_add = new RelayCommand(x =>
+                return _addCommand ??
+                  (_addCommand = new RelayCommand(x =>
                   {
                       MainClasses.AddToList(AddTB);
                   }));
             }
         }
 
-        private RelayCommand _openInBrowser;
-        public RelayCommand OpenInBrowser
+        private RelayCommand _openInBrowserCommand;
+        public RelayCommand OpenInBrowserCommand
         {
             get
             {
-                return _openInBrowser ??
-                  (_openInBrowser = new RelayCommand((x) =>
+                return _openInBrowserCommand ??
+                  (_openInBrowserCommand = new RelayCommand((x) =>
                   {
                       System.Diagnostics.Process.Start("https://steamcommunity.com/profiles/" + _selectedItem.ID);
                   },

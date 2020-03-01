@@ -18,19 +18,29 @@ namespace FirstWpf
 {
     class MainClasses
     {
-        public static string CutString(string String, int ResultLength)
+        public static string GetFromURL(string address)
         {
-            string CopeString = String;
-
-            if (CopeString.Length > ResultLength)
+            using (var client = new WebClient())
             {
-                CopeString = CopeString.Substring(0, ResultLength);
+                return Encoding.UTF8.GetString(client.DownloadData(address));
             }
-            CopeString = CopeString.PadRight(ResultLength);
-
-            return CopeString;
         }
 
+        public static BitmapImage GetImage(string SteamID)
+        {
+            var buffer = new WebClient().DownloadData(SteamID);
+            var bitmap = new BitmapImage();
+
+            using (var stream = new MemoryStream(buffer))
+            {
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.StreamSource = stream;
+                bitmap.EndInit();
+            }
+
+            return bitmap;
+        }
         public static void RemoveFromList(string SteamID)
         {
             string URL = "https://steamcommunity.com/profiles/" + SteamID + "/";
@@ -87,22 +97,7 @@ namespace FirstWpf
             return "";
         }
 
-        public static string DownloadStringFromURL(string URL)
-        {
-            try
-            {
-                using (var client = new WebClient())
-                {
-                    return Encoding.UTF8.GetString(client.DownloadData(new Uri(URL)));
-                }
-            }
-            catch
-            {
-                throw new Exception("cannot download string");
-            }
-        }
-
-        public static PlayerInfo GetPlayerInfo(string SteamID)
+        public static XmlDocument GetXmlFromUrl(string SteamID)
         {
             string URL;
 
@@ -116,114 +111,116 @@ namespace FirstWpf
             {
                 URL = "https://steamcommunity.com/id/" + SteamID + "/?xml=1";
             }
+            var result = new XmlDocument();
+            result.LoadXml(GetFromURL(URL));
+            return result;
 
-            XmlDocument SteamAPIXMl = new XmlDocument();
-            SteamAPIXMl.LoadXml(DownloadStringFromURL(URL));
+        }
 
+        public static PlayerInfo GetPlayerInfo(string SteamID)
+        {
+            var SteamAPIXMl = GetXmlFromUrl(SteamID);
             PlayerInfo HackerInfo = new PlayerInfo();
 
-            foreach (XmlNode xmlNode in SteamAPIXMl.DocumentElement.ChildNodes)
+            try
             {
-                switch (xmlNode.Name)
+                foreach (XmlNode xmlNode in SteamAPIXMl.DocumentElement.ChildNodes)
                 {
-                    case "steamID":
-                        HackerInfo.Name = xmlNode.InnerText;
-                        break;
+                    switch (xmlNode.Name)
+                    {
+                        case "steamID":
+                            HackerInfo.Name = xmlNode.InnerText;
+                            break;
 
-                    case "steamID64":
-                        HackerInfo.ID = xmlNode.InnerText;
-                        break;
+                        case "steamID64":
+                            HackerInfo.ID = xmlNode.InnerText;
+                            break;
 
-                    case "vacBanned":
-                        HackerInfo.VAC = Convert.ToInt32(xmlNode.InnerText);
-                        break;
+                        case "vacBanned":
+                            HackerInfo.VAC = Convert.ToInt32(xmlNode.InnerText);
+                            break;
 
-                    case "stateMessage":
-                        HackerInfo.GameStatus = xmlNode.InnerText;
-                        break;
+                        case "stateMessage":
+                            HackerInfo.GameStatus = xmlNode.InnerText;
+                            break;
 
-                    case "avatarFull":
-                        HackerInfo.Avatar = new BitmapImage(new Uri(xmlNode.InnerText));
-                        break;
+                        case "avatarMedium":
+                            HackerInfo.Avatar = GetImage(xmlNode.InnerText);
+                            HackerInfo.Avatar.Freeze();
+                            break;
+                    }
                 }
+            }
+
+            catch (Exception ex)
+            {
+                return new PlayerInfo(ex.Message, FindIdInString(SteamID), 0, "Error", new BitmapImage());
+            }
+
+            if (!HackerInfo.Avatar.IsFrozen)
+            {
+                HackerInfo.Avatar = new BitmapImage(); HackerInfo.Avatar.Freeze();
             }
             return HackerInfo;
         }
 
-        public static void UpdateAllPlayerInfo()
+        public static List<PlayerInfo> GetAll()
         {
-            StreamReader HackerList = new StreamReader(InfoPath.GetHackerListPath());
-            StreamWriter HackerInfo = new StreamWriter(InfoPath.GetHackerInfoPath());
+            var playerInfos = new List<PlayerInfo>();
 
-            while (!HackerList.EndOfStream)
+            var HackerListStream = new StreamReader(InfoPath.GetHackerListPath());
+
+            var PlayerList = new List<string>();
+
+            while (!HackerListStream.EndOfStream)
             {
-                string id = FindIdInString(HackerList.ReadLine());
-                PlayerInfo PlayerInfo;
-                try
-                {
-                    PlayerInfo = GetPlayerInfo(id);
-                }
-                catch
-                {
-                    throw new Exception("cant get player info");
-                }
-
-                string RESULT = "https://steamcommunity.com/profiles/" + PlayerInfo.ID + "/" + " | " + PlayerInfo.ID + " | " + CutString(PlayerInfo.Name, 15) + " | " + PlayerInfo.VAC + " | " + PlayerInfo.GameStatus;
-                HackerInfo.WriteLine(RESULT);
-            }
-            HackerInfo.Close();
-            HackerList.Close();
-        }
-
-        public static ObservableCollection<PlayerInfo> GetAll()
-        {
-            ObservableCollection<PlayerInfo> playerInfos = new ObservableCollection<PlayerInfo>();
-
-            StreamReader HackerList = new StreamReader(InfoPath.GetHackerListPath());
-
-            while (!HackerList.EndOfStream)
-            {
-                try
-                {
-                    playerInfos.Add(GetPlayerInfo(FindIdInString(HackerList.ReadLine())));
-                }
-                catch
-                {
-                    playerInfos.Add(new PlayerInfo("Error","Error",0,"Error",new BitmapImage()));
-                }
-                
+                PlayerList.Add(HackerListStream.ReadLine());
             }
 
-            HackerList.Close();
+            Parallel.ForEach(PlayerList, (current) =>
+            {
+                playerInfos.Add(GetPlayerInfo(FindIdInString(current)));
+            });
+
+            HackerListStream.Close();
             return playerInfos;
         }
-
-        public static ObservableCollection<PlayerInfo> GetOnline()
+        public static async Task<List<PlayerInfo>> GetAllAsync()
         {
-            ObservableCollection<PlayerInfo> playerInfos = new ObservableCollection<PlayerInfo>();
+            var result = await Task.Run(() => GetAll());
+            return result;
+        }
 
-            StreamReader HackerList = new StreamReader(InfoPath.GetHackerListPath());
+        public static List<PlayerInfo> GetOnline()
+        {
+            var PlayerInfos = new List<PlayerInfo>();
 
-            while (!HackerList.EndOfStream)
+            var PlayerList = new List<string>();
+
+            var HackerListSteam = new StreamReader(InfoPath.GetHackerListPath());
+
+            while (!HackerListSteam.EndOfStream)
             {
-                try
-                {
-                    PlayerInfo currentPlayer = GetPlayerInfo(FindIdInString(HackerList.ReadLine()));
-
-                    if (currentPlayer.GameStatus != "Offline")
-                    {
-                        playerInfos.Add(currentPlayer);
-                    }
-                }
-                catch
-                {
-                    playerInfos.Add(new PlayerInfo("Error", "Error", 0, "Error", new BitmapImage()));
-                }
+                PlayerList.Add(HackerListSteam.ReadLine());
             }
 
-            HackerList.Close();
+            Parallel.ForEach(PlayerList, (current) =>
+            {
+                var currentPlayer = GetPlayerInfo(FindIdInString(current));
 
-            return playerInfos;
+                if (currentPlayer.GameStatus != "Offline")
+                {
+                    PlayerInfos.Add(currentPlayer);
+                }
+            });
+
+            HackerListSteam.Close();
+            return PlayerInfos;
+        }
+        public static async Task<List<PlayerInfo>> GetOnlineAsync()
+        {
+            var result = await Task.Run(() => GetOnline());
+            return result;
         }
     }
 }
