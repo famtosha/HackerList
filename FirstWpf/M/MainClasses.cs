@@ -13,6 +13,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace FirstWpf
 {
@@ -26,18 +27,41 @@ namespace FirstWpf
             }
         }
 
+        private static string CutString(string String)
+        {
+            if (new Regex("In").IsMatch(String) && !new Regex("non").IsMatch(String))
+            {
+                return String.Substring(12);
+            }
+            else
+            {
+                return String;
+            }
+        }
+
         public static BitmapImage GetImage(string SteamID)
         {
-            var buffer = new WebClient().DownloadData(SteamID);
+            byte[] buffer;
             var bitmap = new BitmapImage();
-
-            using (var stream = new MemoryStream(buffer))
+            try
             {
-                bitmap.BeginInit();
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.StreamSource = stream;
-                bitmap.EndInit();
+                buffer = new WebClient().DownloadData(SteamID);
+                using (var stream = new MemoryStream(buffer))
+                {
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.StreamSource = stream;
+                    bitmap.EndInit();
+                }
+                bitmap.Freeze();
             }
+            catch
+            {
+                var image = new BitmapImage();
+                image.Freeze();
+                return image;
+            }
+
 
             return bitmap;
         }
@@ -61,9 +85,11 @@ namespace FirstWpf
             HackerListW.Close();
         }
 
-        public static void AddToList(string SteamID)
+        public static async void AddToList(string SteamID)
         {
-            string URL = "https://steamcommunity.com/profiles/" + SteamID + "/";
+            var TrueSteamID = await GetTrueSteamIDAsync(SteamID);
+
+            string URL = "https://steamcommunity.com/profiles/" + TrueSteamID + "/";
 
             StreamReader HackerListR = new StreamReader(InfoPath.GetHackerListPath());
             List<string> List = new List<string>();
@@ -141,20 +167,19 @@ namespace FirstWpf
                             break;
 
                         case "stateMessage":
-                            HackerInfo.GameStatus = xmlNode.InnerText;
+                            HackerInfo.GameStatus = CutString(xmlNode.InnerText);
                             break;
 
                         case "avatarMedium":
                             HackerInfo.Avatar = GetImage(xmlNode.InnerText);
-                            HackerInfo.Avatar.Freeze();
                             break;
                     }
                 }
             }
 
-            catch (Exception ex)
+            catch
             {
-                return new PlayerInfo(ex.Message, FindIdInString(SteamID), 0, "Error", new BitmapImage());
+                return PlayerInfo.GetErrorInfo(SteamID);
             }
 
             if (!HackerInfo.Avatar.IsFrozen)
@@ -177,12 +202,20 @@ namespace FirstWpf
                 PlayerList.Add(HackerListStream.ReadLine());
             }
 
+            HackerListStream.Close();
+
             Parallel.ForEach(PlayerList, (current) =>
             {
-                playerInfos.Add(GetPlayerInfo(FindIdInString(current)));
-            });
+                try
+                {
+                    playerInfos.Add(GetPlayerInfo(FindIdInString(current)));
+                }
+                catch (Exception ex)
+                {
+                    //Debug.WriteLine("faild to get player info: " + current);
+                }
 
-            HackerListStream.Close();
+            });
             return playerInfos;
         }
         public static async Task<List<PlayerInfo>> GetAllAsync()
@@ -204,17 +237,26 @@ namespace FirstWpf
                 PlayerList.Add(HackerListSteam.ReadLine());
             }
 
+            HackerListSteam.Close();
+
             Parallel.ForEach(PlayerList, (current) =>
             {
-                var currentPlayer = GetPlayerInfo(FindIdInString(current));
-
-                if (currentPlayer.GameStatus != "Offline")
+                try
                 {
-                    PlayerInfos.Add(currentPlayer);
+                    var currentPlayer = GetPlayerInfo(FindIdInString(current));
+
+                    if (currentPlayer.GameStatus != "Offline")
+                    {
+                        PlayerInfos.Add(currentPlayer);
+                    }
                 }
+                catch (Exception ex)
+                {
+                    //Debug.WriteLine("faild to get player info: " + current);
+                }
+
             });
 
-            HackerListSteam.Close();
             return PlayerInfos;
         }
         public static async Task<List<PlayerInfo>> GetOnlineAsync()
@@ -222,5 +264,17 @@ namespace FirstWpf
             var result = await Task.Run(() => GetOnline());
             return result;
         }
+
+        public static string GetTrueSteamID(string ID)
+        {
+            var info = GetPlayerInfo(ID);
+            return info.ID;
+        }
+        public static async Task<string> GetTrueSteamIDAsync(string ID)
+        {
+            var result = await Task.Run(() => GetTrueSteamID(ID));
+            return result;
+        }
+
     }
 }

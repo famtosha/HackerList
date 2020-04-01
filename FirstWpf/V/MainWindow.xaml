@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FirstWpf"
+        xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
         mc:Ignorable="d"
         Title="HackerList" Height="546" Width="947.5">
     <Window.DataContext>
@@ -17,7 +18,7 @@
         </Grid.ColumnDefinitions>
         
         <Grid Grid.Column="1" >
-            <ListBox x:Name="boi" BorderThickness="0" ItemsSource="{Binding Info}" SelectedItem="{Binding SelectedItem}">
+            <ListBox BorderThickness="0" ItemsSource="{Binding Info,diag:PresentationTraceSources.TraceLevel=High}" SelectedItem="{Binding SelectedItem}">
                 <ListBox.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Margin="3">
@@ -31,7 +32,7 @@
                                 <StackPanel Grid.Column="1">
                                     <TextBlock FontSize="15" Text="{Binding Path=Name}"/>
                                     <TextBlock FontSize="12" Text="{Binding Path=ID}"/>
-                                    <TextBlock FontSize="12" Text="{Binding Path=VAC}"/>
+                                    <TextBlock FontSize="12" Foreground="Red" Text="{Binding Path=VAC}"/>
                                     <TextBlock FontSize="12" Text="{Binding Path=GameStatus}"/>
                                 </StackPanel>
 
@@ -57,6 +58,7 @@
                 <Label Width="200" Content="Get Info" />
                 <Button Margin="4" Content="Get Online" Command="{Binding GetOnlineCommand}" Width="200" Height="25"/>
                 <Button Margin="4" Grid.Row="1" Content="Get All" Command="{Binding GetAllCommand}" Width="200" Height="25"/>
+                <Label Content="{Binding Status}"/>
             </StackPanel>
 
             <StackPanel Margin="10" Grid.Row="1">

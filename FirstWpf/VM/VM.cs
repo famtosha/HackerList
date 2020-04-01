@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Threading;
 using System.Windows.Media.Imaging;
+using System.Diagnostics;
 
 namespace FirstWpf
 {
@@ -17,9 +18,11 @@ namespace FirstWpf
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected virtual void OnPropertyChanged(string propertyName)
-        {
+        {    
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
+
+        public Stopwatch Stopwatch = new Stopwatch();
 
         private List<PlayerInfo> _info = new List<PlayerInfo>();
         public List<PlayerInfo> Info
@@ -61,6 +64,19 @@ namespace FirstWpf
             }
         }
 
+        private string _status;
+        public string Status
+        {
+            get
+            {
+                return _status;
+            }
+            set
+            {
+                _status = value; OnPropertyChanged("Status");
+            }
+        }
+
         private string _addTB;
         public string AddTB
         {
@@ -93,21 +109,25 @@ namespace FirstWpf
             get
             {
                 return _getAllCommand ??
-                  (_getAllCommand = new RelayCommand(x =>
+                  (_getAllCommand = new RelayCommand(async (x) =>
                   {
+                      Stopwatch.Start();
                       IsWorking = true;
-                      GetAllAsync();
+                      Status = "InProgress...";
+                      var result = await MainClasses.GetAllAsync();
+                      Application.Current.Dispatcher.Invoke(() =>
+                      {
+                          Info = result; IsWorking = false;
+                          Stopwatch.Stop();
+                          Status = "Done in:" + Stopwatch.Elapsed.ToString();
+                          Stopwatch.Reset();
+                      });
                   },
                   (x) =>
                   {
                       return IsWorking == false;
                   }));
             }
-        }
-        private async void GetAllAsync()
-        {           
-            var result = await MainClasses.GetAllAsync();
-            Application.Current.Dispatcher.Invoke(() => { Info = result; IsWorking = false; });            
         }
 
         private RelayCommand _getOnlineCommand;
@@ -116,21 +136,26 @@ namespace FirstWpf
             get
             {
                 return _getOnlineCommand ??
-                  (_getOnlineCommand = new RelayCommand(x =>
+                  (_getOnlineCommand = new RelayCommand(async (x) =>
                   {
+                      Stopwatch.Start();
                       IsWorking = true;
-                      GetOnlineAsync();
+                      Status = "InProgress...";
+                      var result = await MainClasses.GetOnlineAsync();
+                      Application.Current.Dispatcher.Invoke(() =>
+                      {
+                          Info = result;
+                          IsWorking = false;
+                          Stopwatch.Stop();
+                          Status = "Done in:" + Stopwatch.Elapsed.ToString();
+                          Stopwatch.Reset();
+                      });
                   },
                   (x) =>
                   {
                       return IsWorking == false;
                   }));
             }
-        }
-        private async void GetOnlineAsync()
-        {
-            var result = await MainClasses.GetOnlineAsync();
-            Application.Current.Dispatcher.Invoke(() => { Info = result; IsWorking = false; });
         }
 
         private RelayCommand _changePathCommand;
@@ -142,6 +167,10 @@ namespace FirstWpf
                   (_changePathCommand = new RelayCommand(x =>
                   {
                       InfoPath.SetHackerListPath(PathTB);
+                  },
+                  (x) =>
+                  {
+                      return IsWorking == false;
                   }));
             }
         }
@@ -159,7 +188,7 @@ namespace FirstWpf
                   },
                   (x) =>
                   {
-                      return _selectedItem != null;
+                      return _selectedItem != null && IsWorking == false;
                   }));
             }
         }
@@ -170,9 +199,24 @@ namespace FirstWpf
             get
             {
                 return _addCommand ??
-                  (_addCommand = new RelayCommand(x =>
+                  (_addCommand = new RelayCommand(async (x) =>
                   {
                       MainClasses.AddToList(AddTB);
+                      Stopwatch.Start();
+                      IsWorking = true;
+                      Status = "InProgress...";
+                      Application.Current.Dispatcher.Invoke(() =>
+                      {
+                          IsWorking = false;
+                          Stopwatch.Stop();
+                          Status = "Done in:" + Stopwatch.Elapsed.ToString();
+                          Stopwatch.Reset();
+                          AddTB = "";
+                      });
+                  },
+                  (x) =>
+                  {
+                      return IsWorking == false;
                   }));
             }
         }

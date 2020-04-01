@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media.Imaging;
 
 namespace FirstWpf
@@ -27,6 +28,13 @@ namespace FirstWpf
         public PlayerInfo()
         {
 
+        }
+
+        public static PlayerInfo GetErrorInfo(string SteamID = "Error")
+        {
+            var thing = new PlayerInfo("Error", SteamID, 0, "Error", new BitmapImage());
+            thing.Avatar.Freeze();
+            return thing;
         }
     }
 }

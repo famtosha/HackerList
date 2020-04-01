@@ -1,0 +1,15 @@
+D:\vs\FirstWpf\FirstWpf\bin\Release\FirstWpf.exe.config
+D:\vs\FirstWpf\FirstWpf\bin\Release\FirstWpf.exe
+D:\vs\FirstWpf\FirstWpf\bin\Release\FirstWpf.pdb
+D:\vs\FirstWpf\FirstWpf\obj\Release\V\MainWindow.g.cs
+D:\vs\FirstWpf\FirstWpf\obj\Release\App.g.cs
+D:\vs\FirstWpf\FirstWpf\obj\Release\GeneratedInternalTypeHelper.g.cs
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf_MarkupCompile.cache
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf_MarkupCompile.lref
+D:\vs\FirstWpf\FirstWpf\obj\Release\V\MainWindow.baml
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf.g.resources
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf.Properties.Resources.resources
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf.csproj.GenerateResource.cache
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf.exe
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf.pdb
+D:\vs\FirstWpf\FirstWpf\obj\Release\FirstWpf.csprojAssemblyReference.cache
